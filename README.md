@@ -21,6 +21,10 @@ The following image shows the notebook instance created:
 
 <img src="images/notebook_instance.png" alt="notebook_instance" width="800"/>  
 
+A S3 bucket is set up in order to storage the training data:
+
+<img src="images/s3_bucket.png" alt="s3_bucket" width="800"/>  
+
 The model is trained on both single and multiple instances using a ```ml.g4dn.xlarge``` instance type. For practical purposes, the training halts at the first epoch. Then, the models from single instance and multiple instance training jobs are deployed, as follows:
 
 - Single-instance training:  
@@ -47,7 +51,15 @@ After training and deploying the model, setting up a Lambda function, using the 
 
 
 ## Step 4: Lambda security setup and testing
-A Lambda function requires the proper security policies attached to it in order to invoke a deployed endpoint. Attaching a full access policy would add security vulnerabilities. For this reason, using the IAM interface, a limited policy that allows a user to invoke a specific endpoint (or all own endpoints) is created and attached to the Lambda role, as follows:
+Once the Lambda function is configured, it will return an error when performing a request test to invoke the Sagemaker deployed endpoint. This error is returned since the Lambda function role has no permissions to access the endpoint. 
+
+When choosing a proper policy to resolve the security issue, it is necessary to evaluate some vulnerabilities such as the following:  
+
+- Setting up a “FullAccess” policy without restrictions is a vulnerability that can be exploited by external elements, such as cybercriminals, in case of an unauthorized access to the Lambda Function. 
+- Roles that are old or inactive pose a security risk that can compromise a Lambda Function, hence they should be identified and removed.
+- Roles with policies for Lambda functions that are no longer in use are also a potential risk of unauthorized access and they should be revoked and deleted.  
+
+For this project, a suitable policy that limits access to invoke a specific Sagemaker endpoint is created and attached to the Lambda role using the IAM interface, as follows:  
 
 <img src="images/lambda_role_invoke_policy.png" alt="lambda_role_invoke_policy" width="800"/>    
 <img src="images/lambda_role_policies.png" alt="lambda_role_policies" width="800"/>  
